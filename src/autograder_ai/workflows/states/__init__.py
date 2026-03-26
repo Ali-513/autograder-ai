@@ -1,7 +1,7 @@
 from .test_generation import TestGenerationState, TestCase
 from .evaluation import (
     EvaluationStatus,
-    EvalutationState,
+    EvaluationState,
     TestResult,
     TestExecutionState,
 )
@@ -10,7 +10,7 @@ __all__ = [
     "TestGenerationState",
     "TestCase",
     "EvaluationStatus",
-    "EvalutationState",
+    "EvaluationState",
     "TestResult",
     "TestExecutionState",
 ]

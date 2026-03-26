@@ -20,10 +20,10 @@ OPENAI_MODEL_NAME=gpt-4o-mini
 
 ```bash
 # Create virtual environment
-python3.13 -m venv .venv
+python3 -m venv .venv
 source .venv/bin/activate  # or `.venv\Scripts\activate` on Windows
 
-# Install dependencies
+# Install dependencies (Not now already did)
 pip install poetry
 poetry install
 

@@ -5,6 +5,7 @@ from .core.pre_processors.assignment import AssignmentPreProcessor
 from .core.pre_processors.submission import SubmissionPreProcessor
 from .workflows.builders.test_generation import TestGenerationBuilder
 from .workflows.builders.test_execution import TestExecutionBuilder
+from .workflows.builders.evaluation import EvaluationBuilder
 from .clients.openai_client import OpenaiClient
 
 
@@ -87,11 +88,33 @@ class EvaluationEngine:
             self.results[question_id]["execution_status"] = result["status"]
 
         return execution_results
+    
+    def _run_evaluation(self):
+        builder = EvaluationBuilder(self.llm)
+        workflow = builder.build()
+
+        for question_id, result in self.results.items():
+            if "test_results" not in result:
+                continue
+
+            state = {
+                "question_id": question_id,
+                "question": result["question"],
+                "code": result["code"],
+                "test_results": result["test_results"],
+                "rubric": None,
+                "status": "processing",
+            }
+
+            eval_result = workflow.invoke(state)
+            self.results[question_id]["evaluation"] = eval_result
+
 
     def run(self):
         """Run complete evaluation: generate tests and execute them"""
         self._generate_tests()
         self._run_tests()
+        self._run_evaluation()
         return self.results
 
     def generate_report(self) -> str:
@@ -140,6 +163,32 @@ class EvaluationEngine:
                         report += f"  Time: {tr['execution_time']:.2f}s\n"
             else:
                 report += "Tests not executed yet.\n"
+
+            evaluation = result.get("evaluation")
+            if evaluation:
+                correctness = evaluation.get("correctness", {})
+                report += "\nEVALUATION SUMMARY:\n"
+                report += "-" * 70 + "\n"
+                report += f"Correctness: {correctness.get('status', 'N/A')}\n"
+
+                quality = evaluation.get("code_quality")
+                if quality:
+                    report += (
+                        f"Code Quality - "
+                        f"Readability: {quality.get('readability')}/10, "
+                        f"Structure: {quality.get('structure')}/10, "
+                        f"Best Practices: {quality.get('best_practices')}/10\n"
+                    )
+
+                final_score = evaluation.get("final_score")
+                if final_score:
+                    report += f"Final Score: {final_score.get('total')}\n"
+
+                feedback = evaluation.get("feedback")
+                if feedback:
+                    report += "\nFEEDBACK:\n"
+                    report += feedback + "\n"
+
 
             report += "\n"
 

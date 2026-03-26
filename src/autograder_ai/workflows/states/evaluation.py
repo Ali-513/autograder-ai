@@ -34,12 +34,21 @@ class TestExecutionState(TypedDict):
     status: EvaluationStatus
 
 
-class EvalutationState(TypedDict):
+class EvaluationState(TypedDict):
+    """State for the evaluation workflow"""
+
     question_id: str
     question: str
     code: str
-    test_cases: List[Dict[str, Any]]
-    current_test_index: int
-    test_results: List[Dict[str, Any]]
-    status: EvaluationStatus
+    test_results: List[TestResult]
 
+    rubric: Optional[Dict[str, float]]
+
+    correctness: Optional[Dict[str, Any]]
+    code_quality: Optional[Dict[str, Any]]
+    partial_credit: Optional[Dict[str, Any]]
+
+    final_score: Optional[Dict[str, Any]]
+    feedback: Optional[str]
+
+    status: EvaluationStatus
